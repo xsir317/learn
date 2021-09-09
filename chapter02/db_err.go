@@ -33,10 +33,10 @@ func main() {
 func findUserByMobile(mobile string) (user DbRecord, err error) {
 	oneUser, err := db.QueryRow("mobile='" + mobile + "'")
 
-	//能处理就处理，不要抛
-	if err == nil || err == sql.ErrNoRows {
-		return oneUser, nil
+	//如果错误不是ErrNoRows ， 就包一下抛出去。
+	if err != nil && err != sql.ErrNoRows {
+		return nil, errors.Wrap(err, "Got error on query:"+db.GetLastSql())
 	}
 
-	return nil, errors.Wrap(err, "Got error on query:"+db.GetLastSql())
+	return oneUser, nil
 }
