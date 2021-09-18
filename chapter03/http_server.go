@@ -23,7 +23,7 @@ func main() {
 	g.Go(func(ctx context.Context) error {
 		go func() {
 			<-ctx.Done()
-			fmt.Println("Ctx Done in server")
+			fmt.Println("Ctx Done , Server shutdown")
 			srv.Close()
 		}()
 		return srv.ListenAndServe()
@@ -37,15 +37,15 @@ func main() {
 			case <-ctx.Done():
 				fmt.Println("Ctx Done in signal select")
 				return nil
-			case <-c:
+			case sig := <-c:
 				fmt.Println("signal exit")
-				return errors.New("got signal")
+				return errors.New("Signal " + sig.String())
 			default:
 				time.Sleep(time.Second)
 			}
 		}
-		return nil
 	})
 
-	g.Wait()
+	exit_reason := g.Wait()
+	fmt.Printf("main exit, reason: %v", exit_reason)
 }
