@@ -14,12 +14,19 @@ import (
 )
 
 func main() {
+	root_ctx, root_cancel := context.WithCancel(context.Background())
+
 	srv := &http.Server{Addr: ":8080"}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "hello world\n")
+		url := r.URL.Path[1:]
+		//允许在访问/shutdown 的时候触发关闭。
+		if url == "shutdown" {
+			root_cancel()
+		}
 	})
 
-	g := errgroup.WithCancel(context.Background())
+	g := errgroup.WithCancel(root_ctx)
 	g.Go(func(ctx context.Context) error {
 		go func() {
 			<-ctx.Done()
